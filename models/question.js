@@ -56,11 +56,11 @@ const questionSchema = new Schema({
 
 }, {collection : '', versionKey : false});
 
-qualSchema.plugin(autoIncrement.plugin, {
+questionSchema.plugin(autoIncrement.plugin, {
     model: 'question',
     field: 'num',
     startAt: 1,     // 시작
     increment: 1    // 증가
 });
 
-module.exports = mongoose.model('Qual', questionSchema);
+module.exports = mongoose.model('Question', questionSchema);

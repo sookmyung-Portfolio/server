@@ -1,28 +1,92 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+const jwt = require("jsonwebtoken");
+const { Schema } = require("mongoose");
+
 
 const userSchema = new Schema({
-  // _id 부분은 기본적으로 생략. 알아서 Object.id를 넣어줌
-  name: {
-    type: String,
-    // notnull이나 유니크 인덱스 같은건 원래 몽고디비에는 해당 설정이 없음. 
-    // 몽구스에서 sql처럼 표현하기 위해 추가된 것!
-    required: true, // null 여부
-    unique: true, // 유니크 여부
-  },
-  age: {
-    type: Number, // Int32가 아니다. 기본 자바스크립트에는 존재하지 않으니 넘버로 해줘야 한다.
-    required: true,
-  },
-  married: {
-    type: Boolean,
-    required: true,
-  },
-  comment: String, // 옵션에 type밖에 없을 경우 간단하게 표현 할 수 있다.
-  createdAt: {
-    type: Date,
-    default: Date.now, // 기본값
-  },
+  // 아이디ㅇㅇ
+    id: {
+        type: String,
+        trim: true,
+        unique: 1
+    },
+    // 비밀번호
+    password: {
+        type: String,
+        minlength: 4
+    },
+    // 이름
+    name: {
+      type: String,
+      trim: true
+    },
+    // 학번
+    classof: {
+      type: String,
+    },
+    // 전공
+    dep: {
+      type: String,
+      trim: true
+    },
+    token: { type: String,
+ },
+    tokenTime: {
+  type: Number,
+ },
+})
+
+//save 메소드가 실행되기전에 비밀번호를 암호화하는 로직을 짜야한다
+userSchema.pre("save", function (next) {
+  let user = this;
+
+  //model 안의 paswsword가 변환될때만 암호화
+  if (user.isModified("password")) {
+    bcrypt.genSalt(saltRounds, function (err, salt) {
+      if (err) return next(err);
+      bcrypt.hash(user.password, salt, function (err, hash) {
+        if (err) return next(err);
+        user.password = hash;
+        next();
+      });
+    });
+  } else {
+    next();
+  }
 });
 
-module.exports = mongoose.model('User', userSchema);
+userSchema.methods.comparePassword = function (plainPassword) {
+  //plainPassword를 암호화해서 현재 비밀번호화 비교
+  return bcrypt
+    .compare(plainPassword, this.password)
+    .then((isMatch) => isMatch)
+    .catch((err) => err);
+};
+
+userSchema.methods.generateToken = function () {
+  const token = jwt.sign(this._id.toHexString(), "secretToken");
+  this.token = token;
+  return this.save()
+    .then((user) => user)
+    .catch((err) => err);
+};
+
+userSchema.statics.findByToken = function (token) {
+  let user = this;
+  //secretToken을 통해 user의 id값을 받아오고 해당 아이디를 통해
+  //Db에 접근해서 유저의 정보를 가져온다
+  return jwt.verify(token, "secretToken", function (err, decoded) {
+    return user
+      .findOne({ _id: decoded, token: token })
+      .then((user) => user)
+      .catch((err) => err);
+  });
+};
+
+
+const User = mongoose.model("User", userSchema);
+module.exports = {User}
+
+// module.exports = mongoose.model("User", userSchema);

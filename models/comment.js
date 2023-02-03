@@ -45,11 +45,11 @@ const questionComment = new Schema({
 
 }, {collection : '', versionKey : false});
 
-qualSchema.plugin(autoIncrement.plugin, {
+questionComment.plugin(autoIncrement.plugin, {
     model: 'questionComment',
     field: 'num',
     startAt: 1,     // 시작
     increment: 1    // 증가
 });
 
-module.exports = mongoose.model('Qual', questionComment);
+module.exports = mongoose.model('QuestionComment', questionComment);

@@ -50,11 +50,11 @@ const reviewSchema = new Schema({
 
 }, {collection : '', versionKey : false});
 
-qualSchema.plugin(autoIncrement.plugin, {
+reviewSchema.plugin(autoIncrement.plugin, {
     model: 'review',
     field: 'num',
     startAt: 1,     // 시작
     increment: 1    // 증가
 });
 
-module.exports = mongoose.model('Qual', reviewSchema);
+module.exports = mongoose.model('Review', reviewSchema);
