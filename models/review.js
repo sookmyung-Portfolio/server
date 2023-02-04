@@ -45,7 +45,7 @@ const reviewSchema = new Schema({
         // required : true,
         ref : 'User'
     },
-    
+
     // 주전공
     mainDept: {
         type: String,
@@ -54,6 +54,10 @@ const reviewSchema = new Schema({
     // 부전공
     subDept: {
         type: String
+    },
+    category : {
+        type : String,
+        default : "review"
     }
 
 }, {collection : '', versionKey : false});

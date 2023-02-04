@@ -48,7 +48,7 @@ const questionSchema = new Schema({
         // required : true,
         ref : 'User'
     },
-    
+
     // 주전공
     mainDept: {
       type: String,
@@ -57,6 +57,10 @@ const questionSchema = new Schema({
     // 부전공
     subDept: {
         type: String
+    },
+    category : {
+      type : String,
+      default : "question"
     }
 
 }, {collection : '', versionKey : false});

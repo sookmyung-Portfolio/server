@@ -5,7 +5,7 @@ var autoIncrement = require('mongoose-auto-increment');
 autoIncrement.initialize(mongoose.connection);
 
 const bookmarkSchema = new Schema({
-    post : {
+    postId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'Question',
         // require : true
@@ -27,6 +27,9 @@ const bookmarkSchema = new Schema({
         type : Date,
         default : Date.now,
     },
+    category : {
+        type : String
+    }
 
     
 

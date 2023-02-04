@@ -41,11 +41,13 @@ const qualRouter = require('./routes/quals');
 const reviewRouter = require('./routes/reviews');
 const questionRouter = require('./routes/questions');
 const commentRouter = require('./routes/comments');
+const bookmarkRouter = require('./routes/bookmarks');
 
 app.use('/quals', qualRouter);
 app.use('/reviews', reviewRouter);
 app.use('/questions', questionRouter);
 app.use('/questions/comments', commentRouter);
+app.use('/bookmark', bookmarkRouter);
 
 
 
@@ -80,7 +82,7 @@ app.put("/user/edit/:id", auth, async (req, res) => {
   if (user.id === req.user.id) {
     try {
         var date = new Date();
-        
+
         user.id = req.body.id;
         user.password = req.body.password;
         user.name = req.body.name;
