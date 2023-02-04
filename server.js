@@ -47,7 +47,7 @@ app.use('/quals', qualRouter);
 app.use('/reviews', reviewRouter);
 app.use('/questions', questionRouter);
 app.use('/questions/comments', commentRouter);
-app.use('/bookmark', bookmarkRouter);
+app.use('/bookmarks', bookmarkRouter);
 
 
 

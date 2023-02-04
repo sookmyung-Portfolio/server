@@ -3,7 +3,18 @@ const router = express.Router();
 const Review = require('../models/review');
 const {auth} = require('../middleware/auth');
 
+
+/* 
+    변수설명
+    {port} : 포트번호
+    {postId} : 게시글 _id (오브젝트 타입)
+
+ */ 
+
+
 // 게시글 작성 - 권한필요
+// POST
+// localhost:{port}/reviews
 router.post("/", auth, async (req, res) => {
     const post = new Review();
     
@@ -23,6 +34,8 @@ router.post("/", auth, async (req, res) => {
 });
 
 // 게시글 수정
+// PUT
+// localhost:{port}/reviews/edit/{postId}
 router.put('/edit/:id', auth, async (req, res) => {
     const post = await Review.findOne({_id : req.params.id}); 
 
@@ -47,6 +60,8 @@ router.put('/edit/:id', auth, async (req, res) => {
 
 
 // 게시물 삭제 - 권한필요
+// PUT
+// localhost:{port}/reviews/delete/{postId}
 router.put('/delete/:id', auth, async (req, res) => {
     const post = await Question.findOne({_id : req.params.id}); 
 
@@ -68,6 +83,8 @@ router.put('/delete/:id', auth, async (req, res) => {
 
 
 // 특정 게시물 조회
+// GET
+// localhost:{port}/reviews/{postId}
 router.get("/:id", async (req, res) => {
     try {
         const post = await Review.findOne({_id : req.params.id});
@@ -78,7 +95,9 @@ router.get("/:id", async (req, res) => {
 })
 
 
-// 모든 글 조회 - 필터링 (유저이름)
+// 모든 게시글 조회
+// GET
+// localhost:{port}/quals
 router.get("/", async (req, res) => {
     const username = req.query.user;
     const catName = req.query.cat;

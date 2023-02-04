@@ -8,9 +8,7 @@ const {auth} = require('../middleware/auth');
 
 
 // 북마크 등록
-// localhost:{port}/bookmark?postId={postId}
-
-
+// localhost:{port}/bookmarks?postId={postId}
 router.post("/", auth, checkQualPost, checkQuestionPost, checkReviewPost, async (req, res, next) => {
     var post = res.locals.post;
     const bookmark = new Bookmark();
@@ -33,6 +31,7 @@ router.post("/", auth, checkQualPost, checkQuestionPost, checkReviewPost, async 
 
 
 // 북마크 해제 - 권한필요
+// localhost:{port}/bookmarks/{bookmarkId}
 router.delete("/:id", auth, async (req, res) => {
     try {
         const bookmark = await Bookmark.findOne({_id : req.params.id});
@@ -52,7 +51,8 @@ router.delete("/:id", auth, async (req, res) => {
     }
 })
 
-// 북마크 항목 가져오기
+// 특정 유저 모든 북마크 항목 가져오기
+// localhost:{port}/bookmarks/{userId}
 router.get("/:userId", auth, async(req, res) => {
     try {
         if(req.params.userId === req.user.id) {
