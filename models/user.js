@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
-const { Schema } = require("mongoose");
+var { Schema } = require("mongoose");
 
 
-const userSchema = new Schema({
-  // 아이디ㅇㅇ
+var userSchema = new Schema({
+    // 아이디
     id: {
         type: String,
         trim: true,
@@ -38,6 +38,19 @@ const userSchema = new Schema({
  },
 })
 
+userSchema.virtual('posts', {
+  ref: 'Post',
+  localField: '_id',
+  foreignField: 'userId',
+});
+userSchema.virtual('comments', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'author',
+});
+userSchema.set('toObject', { virtuals: true });
+userSchema.set('toJSON', { virtuals: true });
+
 //save 메소드가 실행되기전에 비밀번호를 암호화하는 로직을 짜야한다
 userSchema.pre("save", function (next) {
   let user = this;
@@ -46,9 +59,10 @@ userSchema.pre("save", function (next) {
   if (user.isModified("password")) {
     bcrypt.genSalt(saltRounds, function (err, salt) {
       if (err) return next(err);
+      // hash - 암호화된 비밀번호
       bcrypt.hash(user.password, salt, function (err, hash) {
         if (err) return next(err);
-        user.password = hash;
+        user.password = hash;     
         next();
       });
     });
@@ -56,6 +70,17 @@ userSchema.pre("save", function (next) {
     next();
   }
 });
+
+userSchema.pre('remove', async function (next) {
+  const user = this;
+  try {
+    await Post.deleteMany({ userId: user._id });
+    next();
+  } catch (e) {
+    next();
+  }
+});
+
 
 userSchema.methods.comparePassword = function (plainPassword) {
   //plainPassword를 암호화해서 현재 비밀번호화 비교
@@ -65,6 +90,7 @@ userSchema.methods.comparePassword = function (plainPassword) {
     .catch((err) => err);
 };
 
+// user.js 에 토큰생성
 userSchema.methods.generateToken = function () {
   const token = jwt.sign(this._id.toHexString(), "secretToken");
   this.token = token;
@@ -86,7 +112,7 @@ userSchema.statics.findByToken = function (token) {
 };
 
 
-const User = mongoose.model("User", userSchema);
+var User = mongoose.model("User", userSchema);
 module.exports = {User}
 
 // module.exports = mongoose.model("User", userSchema);

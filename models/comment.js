@@ -4,7 +4,28 @@ const { Schema } = require("mongoose");
 var autoIncrement = require('mongoose-auto-increment');
 autoIncrement.initialize(mongoose.connection);
 
-const questionComment = new Schema({
+const commentSchema = new Schema({
+    post : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : 'Question',
+        // require : true
+    },
+    // 댓글 작성자
+    author : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        // required: true,
+    },
+
+    parentComment: { // 1
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment',
+    },
+
+    depth: {
+        type: Number,
+        default: 1,
+    },
     
     // 글 본문
     comment : {
@@ -21,12 +42,13 @@ const questionComment = new Schema({
     // 글 수정일자
     updatedAt : {
         type : Date,
-        default : Date.now,
+        // default : Date.now,
     },
 
-    // "created" "updated" "deleted" 로 구분
-    status : {
-        type : String
+    // true : 삭제됨
+    isDeleted : {
+        type : Boolean,
+        default : false
     },
 
     // 글 작성자 아이디 (고유 objectId)
@@ -39,17 +61,32 @@ const questionComment = new Schema({
     // // 글 작성자 이름
     username : {
         type : String,
-        required : true,
+        // required : true,
         ref : 'User'
     },
 
-}, {collection : '', versionKey : false});
+}, {collection : '', versionKey : false},  { toObject: { virtuals: true }, toJSON: { virtuals: true } },);
 
-questionComment.plugin(autoIncrement.plugin, {
-    model: 'questionComment',
+commentSchema.plugin(autoIncrement.plugin, {
+    model: 'commentSchema',
     field: 'num',
     startAt: 1,     // 시작
     increment: 1    // 증가
 });
 
-module.exports = mongoose.model('QuestionComment', questionComment);
+commentSchema.virtual('comments', {
+    ref: 'Comment',
+    localField: '_id',
+    foreignField: 'parentComment',
+  });
+  
+  commentSchema
+    .virtual('childComments')
+    .get(function () {
+      return this._childComments;
+    })
+    .set(function (v) {
+      this._childComments = v;
+    });
+
+module.exports = mongoose.model('Comment', commentSchema);

@@ -1,54 +1,38 @@
 const express = require('express');
-const Comment = require('../models/comment');
-
 const router = express.Router();
+const Comment = require('../models/comment');
+const Post = require('../models/question');
+const {auth} = require('../middleware/auth');
+// var User = require('../models/user');
 
-// axios.post('/comments', { id, comment }); 로부터 요청 받음
-router.post('/', async (req, res, next) => {
-  try {
-    // Comment 스키마(컬렉션)에 데이터를 insert한다.
-    const comment = await Comment.create({ 
-      commenter: req.body.id, // 유저 스키마의 아이디 (_id)
-      comment: req.body.comment, // 댓글 내용
-    });
-    console.log(comment);
+// create
+router.post('/', auth, checkPostId, function(req, res){ 
+  var post = res.locals.post; // 1
 
-    // 위의 comment 쿼리결과에서 commenter 키에 populate를 설정해주면, objectid인 필드값을 실제 user 임베디드 다큐먼트로 매핑해주게 된다
-    const result = await Comment.populate(comment, { path: 'commenter' });
-    res.status(201).json(result);
-  } catch (err) {
-    console.error(err);
-    next(err);
-  }
+  // console.log("qqqqq", req.query.postId);
+    // console.log("aaaa", post);
+
+  // req.body.author = req.user._id; // 2
+  req.body.post = post._id;       // 2
+
+  Comment.create(req.body, function(err, comment){
+    if(err){
+      return console.error(err);  // req,body에 댓글의 내용이 들어있다.
+    }
+    return res.json({comment});
+  });
 });
 
-router.route('/:id')
-  // axios.patch(`/comments/${comment._id}`, { comment: newComment }); 로부터 요청 받음
-  .patch(async (req, res, next) => {
-    try {
-      // Comment 스키마 업데이트
-      const result = await Comment.update({
-        _id: req.params.id, // 업데이트 대상 검색
-      }, {
-        comment: req.body.comment, // 업데이트 내용. 원래는 $set해줘야 되지만 몽구스는 알아서 보호가 된다.
-      });
-      res.json(result);
-    } catch (err) {
-      console.error(err);
-      next(err);
-    }
-  })
-
-  // axios.delete(`/comments/${comment._id}`);로부터 요청 받음
-  .delete(async (req, res, next) => {
-    try {
-      // Comment 스키마 삭제
-      const result = await Comment.deleteOne({ _id: req.params.id });
-      res.json(result);
-    } catch (err) {
-      console.error(err);
-      next(err);
-    }
-  });
-
 module.exports = router;
+
+// private functions
+function checkPostId(req, res, next){ // 1
+  Post.findOne({_id:req.query.postId},function(err, post){
+    // console.log("gigig", req.query.postId);
+    // console.log("gigig1111", post);
+    if(err) return res.json(err);
+
+    res.locals.post = post; // 1
+    next();
+  });
+}

@@ -7,7 +7,7 @@ const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-const { User } = require('./models/User'); 
+var { User } = require('./models/User'); 
 const { auth } = require("./middleware/auth");
 
 app.use(express.urlencoded({extended: true}));
@@ -40,18 +40,13 @@ const indexRouter = require('./routes');
 const qualRouter = require('./routes/quals');
 const reviewRouter = require('./routes/reviews');
 const questionRouter = require('./routes/questions');
-// const authRouter = require('./routes/auth');
-// const loginRouter = require('./routes/login');
-// const logoutRouter = require('./routes/logout');
-// const registerRouter = require('./routes/register');
+const commentRouter = require('./routes/comments');
 
 app.use('/quals', qualRouter);
 app.use('/reviews', reviewRouter);
 app.use('/questions', questionRouter);
-// app.use('/logout', logoutRouter);
-// app.use('/login', loginRouter);
-// app.use('/auth', authRouter);
-// app.use('/register', registerRouter);
+app.use('/questions/comments', commentRouter);
+
 
 
 ////////////// api
@@ -78,6 +73,7 @@ app.post("/register", (req, res) => {
           message: "존재하지 않는 아이디입니다.",
         });
       }
+      // 비밀번호 일치여부 확인 - isMatch : 일치
       user
         .comparePassword(req.body.password)
         .then((isMatch) => {
@@ -91,6 +87,7 @@ app.post("/register", (req, res) => {
           //해야될것: jwt 토큰 생성하는 메소드 작성
           user
             .generateToken()
+            // token을 쿠키에 저장
             .then((user) => {
               res.cookie("x_auth", user.token).status(200).json({
                 loginSuccess: true,

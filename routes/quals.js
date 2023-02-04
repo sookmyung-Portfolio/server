@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Qual = require('../models/qual');
+var Qual = require('../models/qual');
+const {auth} = require('../middleware/auth');
+
 
 
 // 게시글 작성 - 권한필요
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
     const newPost = new Qual(req.body);
     console.log(req.body);
     try {
@@ -13,16 +15,16 @@ router.post("/", async (req, res) => {
     } catch(err) {
         res.status(500).json(err);
     }
-     
 });
 
+
 // 게시글 수정
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
     // 게시물 작성자 판단
     const post = await Qual.findById(req.params.id);  
         // db에서 게시물 검색      
-        if(post.username === req.body.username) {
+        if(post.username === req.body.name) {
           try { 
               // 작성자 일치 확인
               const updatedPost = Qual.findByIdAndUpdate(req.params.id, {       
@@ -39,14 +41,14 @@ router.put('/:id', async (req, res) => {
     } catch(err) {
         res.status(500).json(err);
     }
-  });
+});
 
 
 // 게시물 삭제 - 권한필요
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth , async (req, res) => {
     try {
         const post = await Qual.findById(req.params.id);
-        if(post.username === req.body.username) {
+        if(post.username === req.body.name) {
             try {
                 // await Post.findByIdAndDelete(req.params.id);
                 await post.delete();

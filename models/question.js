@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const { Schema } = require("mongoose");
 var autoIncrement = require('mongoose-auto-increment');
 autoIncrement.initialize(mongoose.connection);
+var Comment = require('./comment'); 
 
 const questionSchema = new Schema({
     // 글 제목
@@ -26,33 +27,27 @@ const questionSchema = new Schema({
     // 글 수정일자
     updatedAt : {
         type : Date,
-        default : Date.now,
+        // default : Date.now,
     },
 
-    // "created" "updated" "deleted" 로 구분
-    status : {
-        type : String
+    // 삭제될경우 true
+    isDelete : {
+        type : Boolean,
+        default : false
     },
 
-    // 글 작성자 아이디 (고유 objectId)
-    // userId : {
-    //     type : ObjectId,
-    //     required : true,
-    //     ref : 'User'
-    // },
+    userId : {
+        type : mongoose.Schema.Types.ObjectId,
+        // required : true,
+        ref : 'User'
+    },
 
     // // 글 작성자 이름
     username : {
         type : String,
-        required : true,
+        // required : true,
         ref : 'User'
-    },
-
-    // writer: {
-    //     type: ObjectId, // 몽고디비에서 ObjectId타입으로 데이터를 다룸
-    //     required: true,
-    //     ref: 'User', // user.js스키마에 reference로 연결되어 있음. join같은 기능. 나중에 populate에 사용
-    //   },
+    }
 
 }, {collection : '', versionKey : false});
 
@@ -62,5 +57,30 @@ questionSchema.plugin(autoIncrement.plugin, {
     startAt: 1,     // 시작
     increment: 1    // 증가
 });
+questionSchema.set('toObject', { virtuals: true });
+questionSchema.set('toJSON', { virtuals: true });
+
+questionSchema.virtual('comments', {
+    ref: 'Comment',
+    localField: '_id',
+    foreignField: 'post',
+  });
+
+questionSchema.methods.createPost = function (text) {
+    const post = new this({
+      text: text,
+    });
+    return post.save();
+  };
+
+questionSchema.pre('remove', async function (next) {
+    const post = this;
+    try {
+      await Comment.deleteMany({ post: post._id });
+      next();
+    } catch (e) {
+      next();
+    }
+  });
 
 module.exports = mongoose.model('Question', questionSchema);

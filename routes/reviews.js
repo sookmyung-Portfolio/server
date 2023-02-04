@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/review');
-
+const {auth} = require('../middleware/auth');
 
 // 게시글 작성 - 권한필요
 router.post("/", async (req, res) => {
@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
 });
 
 // 게시글 수정
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
     // 게시물 작성자 판단
     const post = await Review.findById(req.params.id);  
@@ -43,7 +43,7 @@ router.put('/:id', async (req, res) => {
 
 
 // 게시물 삭제 - 권한필요
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
     try {
         const post = await Review.findById(req.params.id);
         if(post.username === req.body.username) {

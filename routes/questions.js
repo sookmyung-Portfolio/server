@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Question = require('../models/question');
-
+var Question = require('../models/question');
+var Comment = require('../models/comment');
+const {auth} = require('../middleware/auth');
+// var User = require('../models/user');
 
 // 게시글 작성 - 권한필요
 router.post("/", async (req, res) => {
@@ -17,7 +19,7 @@ router.post("/", async (req, res) => {
 });
 
 // 게시글 수정
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
     // 게시물 작성자 판단
     const post = await Question.findById(req.params.id);  
@@ -43,7 +45,7 @@ router.put('/:id', async (req, res) => {
 
 
 // 게시물 삭제 - 권한필요
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
     try {
         const post = await Question.findById(req.params.id);
         if(post.username === req.body.username) {
@@ -64,14 +66,20 @@ router.delete("/:id", async (req, res) => {
 
 
 // 특정 게시물 조회
-router.get("/:id", async (req, res) => {
-    try {
-        const post = await Question.findById(req.params.id);
-        res.status(200).json(post);
-    } catch(err) {
-        res.status(500).json(err);   
-    }
-})
+router.get("/:id", auth, async (req, res) => {
+        Promise.all([
+            Question.findOne({_id : req.params.id}).populate({path : 'userId', select : 'name'}),
+            Comment.find({post : req.params.id}).sort('createdAt').populate({path : 'author', select : 'name'})
+        ])
+        .then (([post, comments]) => {
+            return res.status(200).json({post, comments});
+        })
+        .catch((err) => {
+            console.log('err: ', err);
+            return res.status(500).json(err);
+        });
+ });
+       
 
 
 // 모든 글 조회 - 필터링 (유저이름)
