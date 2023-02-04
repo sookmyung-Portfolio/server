@@ -51,29 +51,110 @@ app.use('/questions/comments', commentRouter);
 
 ////////////// api
 app.post("/register", (req, res) => {
-    const user = new User(req.body);
-  
-    user.save((err, user) => {
-      if (err) return res.json({ success: false, err });
-      return res.status(200).json({
-        success: true
-      });
+  var user = new User(req.body);
+  try {
+    const savedUser = user.save();
+    console.log("hihi", savedUser);
+    res.status(200).json({
+      success: true
     });
-  });
+  } catch (err) {
+    res.status(500).json({ success: false, err });
+  }
+});
+
+app.get("/user/:id", auth, (req, res) => {
+  User.findOne({id : req.params.id}, (err, result) => {
+      if (result.id === req.user.id) {
+        res.json(result);
+      } else {
+        res.status(300).json("접근 권한이 없습니다.");
+      }
+  })
+}
+)
+
+app.put("/user/edit/:id", auth, async (req, res) => {
+  const user = await User.findOne({id : req.params.id});
+
+  if (user.id === req.user.id) {
+    try {
+        var date = new Date();
+        
+        user.id = req.body.id;
+        user.password = req.body.password;
+        user.name = req.body.name;
+        user.classof = req.body.classof;
+        user.dep = req.body.dep;
+        user.updatedAt = date;
+
+        await user.save();
+        res.json(user);
+
+    } catch(err) {
+        res.status(500).json(err);
+    }
+    
+  } else {
+      res.status(401).json("수정 권한이 없습니다.")
+  }
+});
+
+app.put("/user/delete/:id", auth, async (req, res) => {
+  const user = await User.findOne({id : req.params.id});
+  var date = new Date();
+
+  if (user.id === req.user.id) {
+    try {
+        user.isDeleted = true;
+        user.updatedAt = date;
+
+        await user.save();
+        res.json("회원탈퇴");
+
+    } catch(err) {
+        res.status(500).json(err);
+    }
+    
+  } else {
+      res.status(401).json("수정 권한이 없습니다.")
+  }
+});
+
+
+  app.post("/checkId", (req, res) => {
+  User.findOne({id: req.body.id}, function(err, result){
+    if(err) return res.status(500).json({error: err});
+
+    if(!result) return res.json({success: true});
+    if(result) return res.json({success:false});
+})
+})
+
+app.post("/checkUsername", (req, res) => {
+  User.findOne({name: req.body.name}, function(err, result){
+    console.log("name!!!!", req.body.name);
+    if(err) return res.status(500).json({error: err});
+
+    if(!result) return res.json({success: true});
+    if(result) return res.json({success:false});
+})
+})
+
+
   
   
   // 3. login api
   
   app.post("/login", (req, res) => {
     //로그인을할때 아이디와 비밀번호를 받는다
-    User.findOne({ email: req.body.email }, (err, user) => {
+    User.findOne({ id: req.body.id }, (err, user) => {
       if (err) {
         return res.json({
           loginSuccess: false,
           message: "존재하지 않는 아이디입니다.",
         });
       }
-      // 비밀번호 일치여부 확인 - isMatch : 일치
       user
         .comparePassword(req.body.password)
         .then((isMatch) => {
@@ -87,15 +168,19 @@ app.post("/register", (req, res) => {
           //해야될것: jwt 토큰 생성하는 메소드 작성
           user
             .generateToken()
-            // token을 쿠키에 저장
             .then((user) => {
-              res.cookie("x_auth", user.token).status(200).json({
+              res.cookie("x_auth", user.token, {
+                maxAge: 1000 * 60 * 60 * 24 * 7, // 7일간 유지
+                httpOnly: true,
+              }).status(200).json({
                 loginSuccess: true,
                 userId: user._id,
+                // path: 
               });
-            })
+            }) 
             .catch((err) => {
               res.status(400).send(err);
+              console.log("로그인에 실패하였습니다.");
             });
         })
         .catch((err) => res.json({ loginSuccess: false, err }));

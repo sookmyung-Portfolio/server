@@ -31,6 +31,18 @@ var userSchema = new Schema({
       type: String,
       trim: true
     },
+    createdAt : {
+      type : Date,
+      default : Date.now,
+    },
+    updatedAt : {
+      type : Date
+    },
+    isDeleted : {
+      type : Boolean,
+      default : false
+    },
+
     token: { type: String,
  },
     tokenTime: {

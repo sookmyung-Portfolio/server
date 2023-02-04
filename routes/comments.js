@@ -9,10 +9,8 @@ const {auth} = require('../middleware/auth');
 router.post('/', auth, checkPostId, function(req, res){ 
   var post = res.locals.post; // 1
 
-  // console.log("qqqqq", req.query.postId);
-    // console.log("aaaa", post);
-
-  // req.body.author = req.user._id; // 2
+  req.body.author = req.user._id; // 2
+  
   req.body.post = post._id;       // 2
 
   Comment.create(req.body, function(err, comment){

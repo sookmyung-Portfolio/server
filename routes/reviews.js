@@ -4,61 +4,65 @@ const Review = require('../models/review');
 const {auth} = require('../middleware/auth');
 
 // 게시글 작성 - 권한필요
-router.post("/", async (req, res) => {
-    const newPost = new Review(req.body);
-    console.log(req.body);
+router.post("/", auth, async (req, res) => {
+    const post = new Review();
+    
     try {
-        const savedPost = await newPost.save();
-      res.status(200).json(savedPost);
+        post.title = req.body.title;
+        post.content = req.body.content;
+        post.userId = req.user._id;
+        post.username = req.user.name;
+        post.mainDept = req.body.mainDept;
+        post.subDept = req.body.subDept;
+
+        await post.save();
+      res.status(200).json(post);
     } catch(err) {
         res.status(500).json(err);
     }
-     
 });
 
 // 게시글 수정
-router.put('/:id', auth, async (req, res) => {
-    try {
-    // 게시물 작성자 판단
-    const post = await Review.findById(req.params.id);  
-        // db에서 게시물 검색      
-        if(post.username === req.body.username) {
-          try { 
-              // 작성자 일치 확인
-              const updatedPost = Review.findByIdAndUpdate(req.params.id, {       
-                $set: req.body 
-              }, { new: true });
-                res.status(200).json(updatedPost);
-          } catch(err) {
-              res.status(500).json(err);
-          }
-      } else {
-          res.status(401).json("글 작성자만 수정 가능합니다.")
-      }
-    
-    } catch(err) {
-        res.status(500).json(err);
+router.put('/edit/:id', auth, async (req, res) => {
+    const post = await Review.findOne({_id : req.params.id}); 
+
+    if (post.userId === req.user._id) {
+        try {
+            var date = new Date();
+            post.title = req.body.title;
+            post.content = req.body.content;
+            post.updatedAt = date;
+            post.mainDept = req.body.mainDept;
+            post.subDept = req.body.subDept;
+
+            await post.save();
+            res.json(post);
+        } catch(err) {
+            res.status(500).json(err);
+        }    
+    } else {
+        res.status(401).json("글 작성자만 수정 가능합니다.")
     }
-  });
+})
 
 
 // 게시물 삭제 - 권한필요
-router.delete("/:id", auth, async (req, res) => {
-    try {
-        const post = await Review.findById(req.params.id);
-        if(post.username === req.body.username) {
-            try {
-                // await Post.findByIdAndDelete(req.params.id);
-                await post.delete();
-                res.status(200).json("게시물이 정상적으로 삭제되었습니다.");
-            } catch (err) {
-                res.status(500).json(err);
-            }
-        } else {
-            res.status(401).json("글 작성자만 삭제 가능합니다.");
-        }
-    } catch (err) {
-        res.status(500).json(err);
+router.put('/delete/:id', auth, async (req, res) => {
+    const post = await Question.findOne({_id : req.params.id}); 
+
+    if (post.userId === req.user._id) {
+        try {
+            var date = new Date();
+            post.isDeleted = true;
+            post.updatedAt = date;
+
+            await post.save();
+            res.json(post);
+        } catch(err) {
+            res.status(500).json(err);
+        }    
+    } else {
+        res.status(401).json("글 작성자만 수정 가능합니다.")
     }
 })
 
@@ -66,7 +70,7 @@ router.delete("/:id", auth, async (req, res) => {
 // 특정 게시물 조회
 router.get("/:id", async (req, res) => {
     try {
-        const post = await Review.findById(req.params.id);
+        const post = await Review.findOne({_id : req.params.id});
         res.status(200).json(post);
     } catch(err) {
         res.status(500).json(err);   

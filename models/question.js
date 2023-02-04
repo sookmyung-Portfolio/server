@@ -31,7 +31,7 @@ const questionSchema = new Schema({
     },
 
     // 삭제될경우 true
-    isDelete : {
+    isDeleted : {
         type : Boolean,
         default : false
     },
@@ -47,6 +47,16 @@ const questionSchema = new Schema({
         type : String,
         // required : true,
         ref : 'User'
+    },
+    
+    // 주전공
+    mainDept: {
+      type: String,
+    },
+
+    // 부전공
+    subDept: {
+        type: String
     }
 
 }, {collection : '', versionKey : false});

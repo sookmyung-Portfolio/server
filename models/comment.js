@@ -10,11 +10,17 @@ const commentSchema = new Schema({
         ref : 'Question',
         // require : true
     },
+
     // 댓글 작성자
     author : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         // required: true,
+    },
+
+    authorname : {
+        type :String,
+        ref: 'User'
     },
 
     parentComment: { // 1

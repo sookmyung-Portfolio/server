@@ -25,28 +25,36 @@ const qualSchema = new Schema({
 
     // 글 수정일자
     updatedAt : {
-        type : Date,
-        default : Date.now,
+        type : Date
     },
 
-    // "created" "updated" "deleted" 로 구분
-    status : {
-        type : String
+    isDeleted : {
+        type : Boolean,
+        default : false
     },
 
-    // 글 작성자 아이디 (고유 objectId)
-    // userId : {
-    //     type : ObjectId,
-    //     required : true,
-    //     ref : 'User'
-    // },
+    userId : {
+        type : mongoose.Schema.Types.ObjectId,
+        // required : true,
+        ref : 'User'
+    },
 
     // // 글 작성자 이름
     username : {
         type : String,
-        required : true,
+        // required : true,
         ref : 'User'
     },
+    
+    // 주전공
+    mainDept: {
+        type: String,
+    },
+
+    // 부전공
+    subDept: {
+        type: String
+    }
 
 
 }, {collection : '', versionKey : false});
