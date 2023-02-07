@@ -21,7 +21,7 @@ router.post("/", auth, checkQualPost, checkQuestionPost, checkReviewPost, async 
             await bookmark.save();
             res.status(200).json(bookmark);
         } else {
-            res.status(300).json("요청하신 글이 없습니다.");
+            
         }
         
     } catch(err) {

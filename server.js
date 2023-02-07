@@ -33,7 +33,7 @@ connect();
 
 
 // 라우터 모듈
-const indexRouter = require('./routes');
+// const indexRouter = require('./routes');
 // const usersRouter = require('./routes/users');
 // const commentsRouter = require('./routes/comments');
 
@@ -42,12 +42,15 @@ const reviewRouter = require('./routes/reviews');
 const questionRouter = require('./routes/questions');
 const commentRouter = require('./routes/comments');
 const bookmarkRouter = require('./routes/bookmarks');
+const searchRouter = require('./routes/search');
+
 
 app.use('/quals', qualRouter);
 app.use('/reviews', reviewRouter);
 app.use('/questions', questionRouter);
 app.use('/questions/comments', commentRouter);
 app.use('/bookmarks', bookmarkRouter);
+app.use('/search', searchRouter);
 
 
 

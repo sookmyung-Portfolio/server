@@ -15,8 +15,7 @@ let auth = (req, res, next) => {
     .catch((err) => {
       throw err;
     });
-
-    
 };
+
 
 module.exports = { auth };
